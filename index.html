@@ -74,8 +74,19 @@ canvas {
 }
 </style>
 </head>
+<audio id="ambience" loop>
+  <source src="mixkit-birds-chirping-near-the-river-2473.mp3" type="audio/mpeg">
+</audio>
 
-<body>
+<script>
+const ambience = document.getElementById("ambience");
+ambience.volume = 0.15;
+
+// Start music on first tap
+document.addEventListener("click", () => {
+  ambience.play();
+}, { once: true });
+</script><body>
 
 <canvas id="c"></canvas>
 <div class="overlay" id="overlay"></div>
