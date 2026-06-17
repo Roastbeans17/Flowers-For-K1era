@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 
-<title>Flower Story</title>
+<title>Growing Flower Story</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,45 +17,46 @@ html, body {
   height: 100%;
   overflow: hidden;
 
-  font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive;
+  /* FIXED READABLE FONT (iOS SAFE) */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 
-  background: url("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/0bd85dc1-8dbc-4ae9-b532-e664e90c9e8c/dg7pab1-57024b30-d524-4791-8b48-4d1e7cd95053.png")
+  background: url("https://media.easy-peasy.ai/27feb2bb-aeb4-4a83-9fb6-8f3f2a15885e/aaca6b91-d036-45c9-8992-aead66512b18.png")
   no-repeat center center fixed;
 
   background-size: cover;
 }
 
-/* soft bright overlay */
+/* soft bright overlay so text is readable */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.08);
-  z-index: 2;
+  background: rgba(255,255,255,0.10);
+  z-index: 1;
 }
 
 canvas {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* TEXT (FIXED VISIBILITY) */
+/* TEXT LAYER */
 #card {
   position: fixed;
   inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+
   text-align: center;
+  font-size: 26px;
+  padding: 30px;
+  color: #1a1a1a;
 
-  font-size: 28px;
-  color: white;
-  padding: 40px;
+  z-index: 5;
 
-  z-index: 10;
-
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 5px rgba(255,255,255,0.6);
+  transition: opacity 0.25s ease;
 }
 
 .hint {
@@ -63,15 +64,8 @@ canvas {
   bottom: env(safe-area-inset-bottom, 20px);
   right: 20px;
   font-size: 14px;
-  opacity: 0.8;
-  color: white;
-  z-index: 11;
-  pointer-events: none;
-}
-
-/* SAFE AREA FIX */
-html, body {
-  height: 100%;
+  opacity: 0.7;
+  z-index: 6;
 }
 </style>
 </head>
@@ -81,53 +75,10 @@ html, body {
 <canvas id="c"></canvas>
 <div class="overlay"></div>
 
-<div id="card">I spent hours on this</div>
-<div class="hint">Swipe →</div>
+<div id="card">Tap to grow flowers 🌱</div>
+<div class="hint">Tap anywhere →</div>
 
 <script>
-
-/* ---------------- STORY ---------------- */
-const slides = [
-  "I spent hours on this",
-  "Making a website to give you flowers",
-  "I Almost Thought It Wasn't Worth It",
-  "Until I remembered your smile"
-];
-
-let stage = 0;
-let startX = 0;
-
-/* ---------------- SWIPE ---------------- */
-document.addEventListener("touchstart", e => {
-  startX = e.touches[0].clientX;
-}, {passive:true});
-
-document.addEventListener("touchend", e => {
-  const dx = e.changedTouches[0].clientX - startX;
-  if (dx < -40) next();
-});
-
-document.addEventListener("click", next);
-
-function next() {
-  const card = document.getElementById("card");
-  stage++;
-
-  if (stage < slides.length) {
-    card.style.opacity = 0;
-    card.style.transform = "translateY(-10px)";
-
-    setTimeout(() => {
-      card.innerText = slides[stage];
-      card.style.opacity = 1;
-      card.style.transform = "translateY(0)";
-    }, 200);
-
-    return;
-  }
-
-  startFinal();
-}
 
 /* ---------------- CANVAS ---------------- */
 const canvas = document.getElementById("c");
@@ -142,7 +93,7 @@ resize();
 
 ctx.imageSmoothingEnabled = true;
 
-/* ---------------- IMAGES ---------------- */
+/* ---------------- FLOWER IMAGES ---------------- */
 function load(srcs) {
   return srcs.map(s => {
     const img = new Image();
@@ -158,92 +109,63 @@ const flowerImgs = load([
   "https://static.vecteezy.com/system/resources/thumbnails/041/669/348/small/ai-generated-vibrant-yellow-cosmos-flower-with-delicate-petals-on-transparent-background-stock-png.png"
 ]);
 
-const leafImgs = load([
-  "https://png.pngtree.com/png-clipart/20240420/original/pngtree-green-leaf-for-element-png-image_14904901.png",
-  "https://gallery.yopriceville.com/var/albums/Free-Clipart-Pictures/Decorative-Elements-PNG/Leaf_PNG_Clipart.png"
-]);
-
-/* ---------------- PARTICLES ---------------- */
+/* ---------------- FLOWERS ---------------- */
 const flowers = [];
-const leaves = [];
 
-function spawnFlower(x = Math.random()*canvas.width, y = Math.random()*canvas.height) {
+/* each flower grows upward from ground */
+function growFlower(x) {
   flowers.push({
-    x, y,
-    vx: (Math.random()-0.5)*2,
-    vy: (Math.random()-2),
-    size: 40 + Math.random()*50,
-    img: flowerImgs[Math.floor(Math.random()*flowerImgs.length)],
-    rot: Math.random()*Math.PI
+    x: x,
+    groundY: canvas.height - 20,
+    y: canvas.height - 20,
+    height: 0,
+    maxHeight: 80 + Math.random() * 120,
+    size: 40 + Math.random() * 30,
+    img: flowerImgs[Math.floor(Math.random() * flowerImgs.length)],
+    sway: Math.random() * 0.5
   });
 }
 
-function spawnLeaf() {
-  leaves.push({
-    x: -50,
-    y: Math.random()*canvas.height,
-    vx: 2 + Math.random()*2,
-    vy: (Math.random()-0.5),
-    size: 20 + Math.random()*20,
-    img: leafImgs[Math.floor(Math.random()*leafImgs.length)],
-    rot: Math.random()*Math.PI
-  });
-}
-
-/* ---------------- FINAL SCENE ---------------- */
-function startFinal() {
-  document.getElementById("card").style.display = "none";
-  document.querySelector(".hint").style.display = "none";
-
-  for (let i = 0; i < 50; i++) spawnFlower();
-
-  setInterval(() => {
-    spawnFlower(Math.random()*canvas.width, Math.random()*canvas.height);
-  }, 200);
-}
-
-/* ---------------- LOOP ---------------- */
-function animate() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  for (let i=0;i<leaves.length;i++) {
-    const l = leaves[i];
-    l.x += l.vx;
-    l.y += l.vy;
-    l.rot += 0.01;
-
-    ctx.save();
-    ctx.translate(l.x,l.y);
-    ctx.rotate(l.rot);
-    ctx.drawImage(l.img,-l.size/2,-l.size/2,l.size,l.size);
-    ctx.restore();
-
-    if (l.x > canvas.width+100) leaves.splice(i,1);
+/* ---------------- TAP = GROW ---------------- */
+document.addEventListener("click", () => {
+  for (let i = 0; i < 3; i++) {
+    growFlower(Math.random() * canvas.width);
   }
+});
 
-  for (let i=0;i<flowers.length;i++) {
-    const f = flowers[i];
-    f.x += f.vx;
-    f.y += f.vy;
-    f.vy += 0.01;
-    f.rot += 0.02;
+/* ---------------- INITIAL FLOWERS ---------------- */
+for (let i = 0; i < 5; i++) {
+  growFlower(Math.random() * canvas.width);
+}
 
-    ctx.save();
-    ctx.translate(f.x,f.y);
-    ctx.rotate(f.rot);
-    ctx.drawImage(f.img,-f.size/2,-f.size/2,f.size,f.size);
-    ctx.restore();
+/* ---------------- RENDER LOOP ---------------- */
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let f of flowers) {
+
+    // grow upward
+    if (f.height < f.maxHeight) {
+      f.height += 1.2;
+    }
+
+    const y = f.groundY - f.height;
+
+    const swayOffset = Math.sin(Date.now() * 0.002 + f.x) * 5;
+
+    ctx.drawImage(
+      f.img,
+      f.x + swayOffset - f.size/2,
+      y - f.size,
+      f.size,
+      f.size
+    );
   }
 
   requestAnimationFrame(animate);
 }
-animate();
 
-/* ambient leaves */
-setInterval(() => {
-  if (stage >= slides.length-1) return;
-  spawnLeaf();
-}, 300);
+animate();
 
 </script>
 
