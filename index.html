@@ -282,6 +282,32 @@ function animate() {
 }
 
 animate();
+<!-- lots of your code above -->
+
+<div id="intro">
+  <h1>🌅 Tap for an immersive experience 🌅</h1>
+  <p>✨</p>
+</div>
+
+<audio id="natureAudio" loop>
+  <source src="mixkit-birds-chirping-near-the-river-2473.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const intro = document.getElementById("intro");
+const audio = document.getElementById("natureAudio");
+
+intro.addEventListener("click", () => {
+  audio.volume = 0.4;
+  audio.play();
+
+  intro.style.opacity = "0";
+  intro.style.transition = "opacity 1s";
+
+  setTimeout(() => {
+    intro.style.display = "none";
+  }, 1000);
+});
 
 </script>
 
