@@ -88,10 +88,21 @@ canvas {
 <div class="hint">Swipe →</div>
 
 <script>
+document.addEventListener("click", () => {
 
+  const intensity = stage < slides.length - 1 ? 5 : 18;
+
+  for (let i = 0; i < intensity; i++) {
+    growFlower(
+      Math.random() * canvas.width,
+      Math.random() * canvas.height,
+      true
+    );
+  }
+});
 /* ---------------- STORY ---------------- */
 const slides = [
-  "I spent hours on this",
+  "I spent hours",
   "Making a website to give you flowers",
   "I Almost Thought It Wasn't Worth It...",
   "Until I remembered your smile :)"
@@ -194,21 +205,26 @@ const flowerImgs = load([
 const flowers = [];
 
 /* budding flowers */
-function growFlower(x, y = canvas.height - 10) {
-  flowers.push({
-    x,
-    baseY: y,
-    y: y,
-    size: 0,
-    maxSize: 35 + Math.random() * 40,
-    img: flowerImgs[Math.floor(Math.random() * flowerImgs.length)],
-    sway: Math.random() * 0.6,
+function growFlower(x, y = null, forceExplosion = false) {
 
-    // NEW: vertical drift target (this is key)
-    driftY: y - (Math.random() * canvas.height * 0.7)
+  const isExplosion = forceExplosion || Math.random() < 0.7;
+
+  flowers.push({
+    x: x,
+    y: y ?? (isExplosion ? Math.random() * canvas.height : canvas.height - 10),
+
+    size: 0,
+    maxSize: 25 + Math.random() * 45,
+
+    img: flowerImgs[Math.floor(Math.random() * flowerImgs.length)],
+
+    sway: Math.random() * 0.8,
+
+    driftY: isExplosion
+      ? Math.random() * canvas.height
+      : canvas.height - 10
   });
 }
-
 /* ---------------- ANIMATE ---------------- */
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
